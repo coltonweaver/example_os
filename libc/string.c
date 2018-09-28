@@ -1,11 +1,4 @@
-#include "util.h"
-
-void memory_copy(char * src, char * dst, int nbytes) {
-    int i;
-    for (i = 0; i < nbytes; i++) {
-        *(dst + i) = *(src + i);
-    }
-}
+#include "string.h"
 
 void int_to_ascii(int n, char str[]) {
     int i, sign;
@@ -21,7 +14,6 @@ void int_to_ascii(int n, char str[]) {
     reverse(str);
 }
 
-/* K&R */
 void reverse(char s[]) {
     int c, i, j;
     for (i = 0, j = strlen(s)-1; i < j; i++, j--) {
@@ -31,9 +23,28 @@ void reverse(char s[]) {
     }
 }
 
-/* K&R */
 int strlen(char s[]) {
     int i = 0;
     while (s[i] != '\0') ++i;
     return i;
+}
+
+void append(char s[], char n) {
+    int len = strlen(s);
+    s[len] = n;
+    s[len + 1] = '\0';
+}
+
+void backspace(char s[]) {
+    int len = strlen(s);
+    s[len - 1] = '\0';
+}
+
+int strcmp(char s1[], char s2[]) {
+    int i;
+    for (i = 0; s1[i] == s2[i]; i++) {
+        if (s1[i] == '\0') return 0;
+    }
+
+    return s1[i] - s2[i];
 }

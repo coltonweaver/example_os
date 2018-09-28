@@ -1,6 +1,7 @@
 #include "screen.h"
-#include "ports.h"
-#include "../kernel/util.h"
+#include "../cpu/ports.h"
+#include "../libc/string.h"
+#include "../libc/mem.h"
 
 /* Declaration of private functions */
 int get_cursor_offset();
@@ -43,6 +44,13 @@ void kprint(char * msg) {
     kprint_at(msg, -1, -1);
 }
 
+void kprint_backspace() {
+    int offset = get_cursor_offset()-2;
+    int row = get_offset_row(offset);
+    int col = get_offset_col(offset);
+    print_char(0x08, col, row, WHITE_ON_BLACK);
+}
+
 /*********************************************************
 * Private Kernel API functions                           *
 **********************************************************/
@@ -76,6 +84,9 @@ int print_char(char c, int col, int row, char attr) {
     if (c == '\n') {
         row = get_offset_row(offset);
         offset = get_offset(0, row + 1);
+    } else if (c == 0x08) {
+        vmem[offset] = ' ';
+        vmem[offset + 1] = attr;
     } else {
         vmem[offset] = c;
         vmem[offset + 1] = attr;
@@ -86,13 +97,13 @@ int print_char(char c, int col, int row, char attr) {
     if (offset >= MAX_ROWS* MAX_COLS * 2) {
         int i;
         for (i = 1; i < MAX_ROWS; i++) {
-            memory_copy(get_offset(0, i) + VIDEO_ADDRESS,
-                        get_offset(0, i-1) + VIDEO_ADDRESS,
+            mem_copy((u8*)get_offset(0, i) + VIDEO_ADDRESS,
+                        (u8*)get_offset(0, i-1) + VIDEO_ADDRESS,
                         MAX_COLS * 2);
         }
 
         /* Blank last line */
-        char * last_line = get_offset(0, MAX_ROWS - 1) + VIDEO_ADDRESS;
+        char * last_line = (char*)get_offset(0, MAX_ROWS - 1) + VIDEO_ADDRESS;
         for (i = 0; i < MAX_COLS * 2; i++) last_line[i] = 0;
 
         offset -= 2 * MAX_COLS;
